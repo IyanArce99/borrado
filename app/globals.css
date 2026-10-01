@@ -1,26 +1,141 @@
 @import "tailwindcss";
 
+/* Tema por atributo en <html>, no por media query: lo fija el script inline del layout. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #ffffff;
+  --sf: #ffffff;
+  --ink: #0b0b0b;
+  --ink2: #3a3a3a;
+  --mut: #6b6b6b;
+  --rgb: 11, 11, 11;
+  --red: #e0261b;
+  --bgA: rgba(255, 255, 255, 0.94);
+  --panel: #0c0c0d;
+  --panelInk: #ecece9;
+  --bar: #e6e6e6;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0c0c0d;
+  --sf: #111113;
+  --ink: #f0f0ed;
+  --ink2: #c8c8c4;
+  --mut: #8a8a86;
+  --rgb: 240, 240, 237;
+  --red: #ff3b2f;
+  --bgA: rgba(12, 12, 13, 0.94);
+  --panel: #18181a;
+  --panelInk: #ecece9;
+  --bar: #2a2a2c;
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-sf: var(--sf);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink2);
+  --color-mut: var(--mut);
+  --color-red: var(--red);
+  --color-bgA: var(--bgA);
+  --color-panel: var(--panel);
+  --color-panel-ink: var(--panelInk);
+  --color-bar: var(--bar);
+  /* Líneas: rgba(var(--rgb), α) */
+  --color-line: rgba(var(--rgb), 0.14);
+  --color-line-soft: rgba(var(--rgb), 0.1);
+  --color-line-card: rgba(var(--rgb), 0.16);
+  --color-line-strong: rgba(var(--rgb), 0.3);
+  --color-track: rgba(var(--rgb), 0.07);
+  --color-dim: rgba(var(--rgb), 0.2);
+  /* Tonos fijos de los paneles oscuros y la social card */
+  --color-panel-mut: #a1a1a1;
+  --color-panel-line: rgba(246, 246, 245, 0.16);
+  --color-card-red: #ff4a3d;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-*: initial;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-radius: 0;
+  }
+
+  html {
+    background: var(--bg);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* El buscador tiene su propio botón "Cerrar": sin la ✕ nativa del navegador. */
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Contenedor de página: fluido, 16–18px de lateral, máx. 1080px. */
+@utility page {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  @media (width >= 40rem) {
+    padding-inline: 18px;
+  }
+}
+
+/* Panel a sangre en móvil, contenido en el contenedor en desktop. */
+@utility bleed {
+  margin-inline: -16px;
+  padding-inline: 16px;
+  @media (width >= 40rem) {
+    margin-inline: -18px;
+    padding-inline: 18px;
+  }
+  @media (width >= 48rem) {
+    margin-inline: 0;
+    padding-inline: 32px;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility hatched {
+  background: repeating-linear-gradient(45deg, var(--mut) 0 2px, transparent 2px 4px);
+  border: 1px solid var(--mut);
 }

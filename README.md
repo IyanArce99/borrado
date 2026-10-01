@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BORRADO — MVP web (Madrid)
 
-## Getting Started
+Plataforma de inteligencia inmobiliaria centrada en los anuncios de vivienda que **desaparecen** del mercado observado en Madrid. No es un portal: “¿Qué se ha borrado?” y “¿Qué pasó antes de desaparecer?”.
 
-First, run the development server:
+Next.js 16 (App Router, Turbopack) · React 19 · Tailwind CSS v4 · Geist / Geist Mono.
+
+## Desarrollo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Variable opcional: `NEXT_PUBLIC_SITE_URL` (por defecto `https://borrado.es`), usada en metadatos, `sitemap.xml` y `robots.txt`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Rutas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Ruta | Render | Notas |
+|---|---|---|
+| `/` | estática | Home |
+| `/borrados` | dinámica | Filtros y orden en la query string (`?distrito=chamberi&fecha=7&orden=bajada&n=24`) |
+| `/vivienda/[id]` | dinámica | Ficha, `robots: noindex` |
+| `/estadisticas` | estática | Gráficos interactivos |
+| `/explorar` | estática | 20 distritos + Próximamente |
+| `/madrid/[slug]` | SSG (20) | Slug desconocido → 404. No existe `/madrid` |
+| `/metodologia`, `/agencias`, `/pro` | estáticas | |
+| `/api/search?q=` | route handler | Buscador global |
 
-## Learn More
+## Estructura
 
-To learn more about Next.js, take a look at the following resources:
+```
+lib/
+  data.ts       Dataset determinista (PRNG seed 20260930, hoy = 30 SEP 2026) y tipos
+  stats.ts      stat(), spark(), facts(), toHuella() — portados del prototipo
+  api.ts        getStats, getBorrados, getVivienda, getDistrito, getAgencyFeed, searchSite
+  filters.ts    Definición, validación y serialización de filtros (client-safe)
+  format.ts     Formateadores deterministas (sin Intl) y fechas relativas por día
+  districts.ts  Distritos y barrios
+components/
+  shell/        Header, TabBar, menú "Más", buscador, toast, tema, UIProvider
+  huella.tsx    Huella BORRADO (tarjeta sin foto con sparkline y rastro)
+  ...           Gráficos, formularios, feed de agencias, histórico de precio
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`lib/api.ts` es la única puerta a los datos y sus funciones son asíncronas: para conectar un backend real basta con reimplementarlas.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Reglas de producto
 
-## Deploy on Vercel
+- Nunca “vendida”: desaparecido ≠ vendido. Sin especular causas; solo hechos observables.
+- Sin fotografías. Ubicación máxima: barrio.
+- Todo KPI, tarjeta y gráfico lleva “Datos de demostración”.
+- Fechas por día (“hoy”, “ayer”, “hace N días”); nunca horas ni minutos.
+- Todas las métricas salen del mismo dataset (ayer = 87, últimos 30 días = 1.284; la suma por distritos cuadra con los totales).
+- Rojo solo para lo borrado. Radio 0 en todo.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tema
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`light | dark` en `data-theme` de `<html>`, persistido en `localStorage('borrado-theme')`. Un script inline en `<head>` lo aplica antes del primer pintado (y usa `prefers-color-scheme` en la primera visita).
+
+## Formularios
+
+Validación nativa y confirmación inline; aún sin backend ni pagos.
